@@ -1,0 +1,4 @@
+# build related
+bin/
+# local dev
+.credentials/

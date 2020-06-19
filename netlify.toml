@@ -1,0 +1,9 @@
+[build]
+publish = "dist"
+functions = "functions"
+command = "make build"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200

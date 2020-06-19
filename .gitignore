@@ -1,0 +1,13 @@
+# build related
+node_modules
+dist
+
+# Local Netlify folder
+.netlify
+# Build folder for netlify functions
+functions
+
+# local dev
+.envrc
+
+.DS_Store

@@ -1,0 +1,32 @@
+{
+  "plugins": ["prettier", "security", "no-only-tests"],
+  "extends": ["airbnb", "prettier", "prettier/react", "plugin:security/recommended"],
+  "globals": {
+    "window": true,
+    "document": true,
+  },
+  "root": true,
+  "rules": {
+    "prettier/prettier": "error",
+    "no-only-tests/no-only-tests": "error",
+    "no-debugger": "warn",
+    "no-console": "warn",
+    "react/jsx-curly-brace-presence": "error",
+    "react/require-default-props": "warn",
+    "no-unused-vars": "warn",
+    "import/order": [
+      "error",
+      {
+        "newlines-between": "always"
+      }
+    ]
+  },
+  "settings": {
+    "import/resolver": {
+      "node": {
+        "paths": ["src"],
+        "extensions": [".js", ".jsx", ".ts", ".tsx"]
+      }
+    }
+  }
+}

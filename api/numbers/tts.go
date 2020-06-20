@@ -1,4 +1,4 @@
-package translators
+package numbers
 
 import (
 	"bytes"
@@ -14,7 +14,7 @@ import (
 	texttospeechpb "google.golang.org/genproto/googleapis/cloud/texttospeech/v1"
 )
 
-type Translator struct {
+type TTS struct {
 	client *texttospeech.Client
 	ctx    context.Context
 }
@@ -55,16 +55,16 @@ func GetCredentials() option.ClientOption {
 	return opt
 }
 
-func NewTranslator(ctx context.Context) (*Translator, error) {
+func NewTTS(ctx context.Context) (*TTS, error) {
 	options := GetCredentials()
 	client, err := texttospeech.NewClient(ctx, options)
 	if err != nil {
 		return nil, err
 	}
-	return &Translator{client: client, ctx: ctx}, nil
+	return &TTS{client: client, ctx: ctx}, nil
 }
 
-func (t *Translator) Translate(text string, languageCode string) (io.Reader, error) {
+func (t *TTS) Translate(text string, languageCode string) (io.Reader, error) {
 	req := texttospeechpb.SynthesizeSpeechRequest{
 		Input: &texttospeechpb.SynthesisInput{
 			InputSource: &texttospeechpb.SynthesisInput_Text{Text: text},

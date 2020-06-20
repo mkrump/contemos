@@ -1,4 +1,4 @@
-package handlers
+package numbers
 
 import (
 	"context"
@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/apex/gateway"
-	"github.com/mkrump/numbers/api/loggers"
 	"github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -31,7 +30,7 @@ func (m MockGetter) Get(number string, languageCode string) (string, error) {
 }
 
 func (suite *HandlerTestSuite) TestHandler() {
-	l := loggers.NewDefaultLogger()
+	l := NewDefaultLogger()
 	logrus.WithField("package", "handler")
 	h := Handler{
 		logger: l,

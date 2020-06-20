@@ -1,15 +1,13 @@
-package storage
+package numbers
 
 import (
 	"fmt"
 	"io"
 	"os"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/mkrump/numbers/api/loggers"
-
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
@@ -24,7 +22,7 @@ type S3 struct {
 }
 
 func NewS3(bucket string, cloudfrontDomain string, config aws.Config) *S3 {
-	l := loggers.NewDefaultLogger()
+	l := NewDefaultLogger()
 	standardFields := logrus.Fields{
 		"package": "s3",
 		"bucket":  bucket,

@@ -1,4 +1,4 @@
-package translators
+package numbers
 
 import (
 	"context"
@@ -6,7 +6,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/mkrump/numbers/api/loggers"
 	"github.com/sirupsen/logrus"
 
 	"github.com/stretchr/testify/suite"
@@ -18,8 +17,8 @@ type TranslatorTestSuite struct {
 	APIKey string
 }
 
-func TestTranslationServiceSuite(t *testing.T) {
-	l := loggers.NewDefaultLogger()
+func TestTTSSuite(t *testing.T) {
+	l := NewDefaultLogger()
 	s := &TranslatorTestSuite{Logger: l}
 	fmt.Println(os.Getwd())
 	appCredentials := os.Getenv("GC_ACCOUNT_TYPE")
@@ -29,11 +28,11 @@ func TestTranslationServiceSuite(t *testing.T) {
 	suite.Run(t, s)
 }
 
-func (suite *TranslatorTestSuite) TestTTSIntegrationTranslate() {
+func (suite *TranslatorTestSuite) TestTTSIntegration() {
 	ctx := context.Background()
 	fmt.Println(os.Getwd())
 
-	t, err := NewTranslator(ctx)
+	t, err := NewTTS(ctx)
 	suite.NoError(err)
 
 	_, err = t.Translate("1", "es")

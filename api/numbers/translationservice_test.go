@@ -1,10 +1,9 @@
-package translationservice
+package numbers
 
 import (
 	"fmt"
 	"testing"
 
-	"github.com/mkrump/numbers/api/loggers"
 	"github.com/sirupsen/logrus"
 
 	"github.com/stretchr/testify/suite"
@@ -23,7 +22,7 @@ func (f FakeHandler) Get(number string, languageCode string) (string, error) {
 }
 
 func TestTranslationServiceSuite(t *testing.T) {
-	l := loggers.NewDefaultLogger()
+	l := NewDefaultLogger()
 	s := &TranslationServiceTestSuite{Logger: l}
 	suite.Run(t, s)
 }

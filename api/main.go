@@ -6,12 +6,9 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/mkrump/numbers/api/numbers"
+
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/mkrump/numbers/api/handlers"
-	"github.com/mkrump/numbers/api/loggers"
-	"github.com/mkrump/numbers/api/storage"
-	"github.com/mkrump/numbers/api/translationservice"
-	"github.com/mkrump/numbers/api/translators"
 	"github.com/sirupsen/logrus"
 
 	"net/http"
@@ -21,20 +18,20 @@ import (
 )
 
 func initLogger() *logrus.Logger {
-	l := loggers.NewDefaultLogger()
+	l := numbers.NewDefaultLogger()
 	return l
 }
 
-func initTranslator() *translators.Translator {
+func initTranslator() *numbers.TTS {
 	ctx := context.Background()
-	t, err := translators.NewTranslator(ctx)
+	t, err := numbers.NewTTS(ctx)
 	if err != nil {
 		log.Fatalf("error initializing app: %v", err)
 	}
 	return t
 }
 
-func initUploader() *storage.S3 {
+func initUploader() *numbers.S3 {
 	region := os.Getenv("S3_REGION")
 	if region == "" {
 		log.Fatal("Need to set env var S3_REGION")
@@ -48,15 +45,15 @@ func initUploader() *storage.S3 {
 	if cloudfrontDomain == "" {
 		log.Fatal("Need to set env var CLOUDFRONT_DOMAIN")
 	}
-	return storage.NewS3(bucket, cloudfrontDomain, config)
+	return numbers.NewS3(bucket, cloudfrontDomain, config)
 }
 
 func main() {
 	t := initTranslator()
 	u := initUploader()
 	l := initLogger()
-	ts := translationservice.NewTranslationService(l, t, u)
-	h := handlers.NewHandler(l, ts)
+	ts := numbers.NewTranslationService(l, t, u)
+	h := numbers.NewHandler(l, ts)
 	port := flag.Int("port", -1, "specify a port to use http rather than AWS Lambda")
 	flag.Parse()
 	listener := gateway.ListenAndServe

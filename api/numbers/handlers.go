@@ -1,10 +1,13 @@
 package numbers
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
+
+	"github.com/aws/aws-lambda-go/lambdacontext"
 
 	"github.com/sirupsen/logrus"
 )
@@ -28,7 +31,61 @@ type ResponseBody struct {
 	Url          string `json:"url"`
 }
 
+type Bearer struct {
+	Identity *Identity `json:"identity"`
+	User     *User     `json:"user"`
+	SiteUrl  string    `json:"site_url"`
+	Alg      string    `json:"alg"`
+}
+
+type Identity struct {
+	URL   string `json:"url"`
+	Token string `json:"token"`
+}
+
+type User struct {
+	AppMetaData  *AppMetaData  `json:"app_metadata"`
+	Email        string        `json:"email"`
+	Exp          int           `json:"exp"`
+	Sub          string        `json:"sub"`
+	UserMetadata *UserMetadata `json:"user_metadata"`
+}
+type AppMetaData struct {
+	Provider string `json:"provider"`
+}
+type UserMetadata struct {
+	FullName string `json:"full_name"`
+}
+
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	//TODO see if can remove lambdacontext
+	lc, ok := lambdacontext.FromContext(r.Context())
+	if !ok {
+		err := errors.New("something went wrong")
+		h.logger.Errorf("error retrieving context %+v", r.Context())
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	bearer := lc.ClientContext.Custom["netlify"]
+	raw, err := base64.StdEncoding.DecodeString(bearer)
+	if err != nil {
+		h.logger.Error(err)
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	data := Bearer{}
+	err = json.Unmarshal(raw, &data)
+	if err != nil {
+		h.logger.Error(err)
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	if data.User == nil {
+		err := errors.New("forbidden")
+		h.logger.Errorf("Unauthenticated request bearer: %+v", bearer)
+		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	}
 	h.logger.Infof("request: %s", r.URL.Query())
 	number := r.URL.Query().Get("number")
 	if number == "" {

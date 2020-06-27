@@ -53,7 +53,8 @@ func main() {
 	u := initUploader()
 	l := initLogger()
 	ts := numbers.NewTranslationService(l, t, u)
-	h := numbers.NewHandler(l, ts)
+	h := numbers.AuthMiddleware(numbers.NewHandler(l, ts))
+
 	port := flag.Int("port", -1, "specify a port to use http rather than AWS Lambda")
 	flag.Parse()
 	listener := gateway.ListenAndServe
@@ -61,6 +62,8 @@ func main() {
 	if *port != -1 {
 		portStr = fmt.Sprintf(":%d", *port)
 		listener = http.ListenAndServe
+		// No auth for local dev
+		h = numbers.NewHandler(l, ts)
 	}
 	http.Handle("/api/numbers", h)
 	log.Fatal(listener(portStr, nil))

@@ -57,35 +57,40 @@ type UserMetadata struct {
 	FullName string `json:"full_name"`
 }
 
+func AuthMiddleware(h *Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		lc, ok := lambdacontext.FromContext(r.Context())
+		if !ok {
+			err := errors.New("server error")
+			h.logger.Errorf("error retrieving context %+v", r.Context())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		bearer := lc.ClientContext.Custom["netlify"]
+		raw, err := base64.StdEncoding.DecodeString(bearer)
+		if err != nil {
+			h.logger.Error(err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		data := Bearer{}
+		err = json.Unmarshal(raw, &data)
+		if err != nil {
+			h.logger.Error(err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		if data.User == nil {
+			err := errors.New("forbidden")
+			h.logger.Errorf("Unauthenticated request bearer: %+v", bearer)
+			http.Error(w, err.Error(), http.StatusForbidden)
+			return
+		}
+		h.ServeHTTP(w, r)
+	})
+}
+
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	//TODO see if can remove lambdacontext
-	lc, ok := lambdacontext.FromContext(r.Context())
-	if !ok {
-		err := errors.New("something went wrong")
-		h.logger.Errorf("error retrieving context %+v", r.Context())
-		http.Error(w, err.Error(), 500)
-		return
-	}
-	bearer := lc.ClientContext.Custom["netlify"]
-	raw, err := base64.StdEncoding.DecodeString(bearer)
-	if err != nil {
-		h.logger.Error(err)
-		http.Error(w, err.Error(), 500)
-		return
-	}
-	data := Bearer{}
-	err = json.Unmarshal(raw, &data)
-	if err != nil {
-		h.logger.Error(err)
-		http.Error(w, err.Error(), 500)
-		return
-	}
-	if data.User == nil {
-		err := errors.New("forbidden")
-		h.logger.Errorf("Unauthenticated request bearer: %+v", bearer)
-		http.Error(w, err.Error(), http.StatusForbidden)
-		return
-	}
 	h.logger.Infof("request: %s", r.URL.Query())
 	number := r.URL.Query().Get("number")
 	if number == "" {

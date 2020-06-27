@@ -89,6 +89,7 @@ export default function Play({
         </Grid>
         <Grid item xs={12}>
           <Button
+            size="large"
             type="submit"
             fullWidth
             variant="contained"

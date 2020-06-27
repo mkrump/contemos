@@ -1,37 +1,17 @@
 import React, { useEffect, useState } from "react";
-import Box from "@material-ui/core/Box";
-import Container from "@material-ui/core/Container";
-import CssBaseline from "@material-ui/core/CssBaseline";
 import { makeStyles } from "@material-ui/core/styles";
-import { MuiThemeProvider } from "@material-ui/core";
 
 import getNumber from "../../fetch/api";
 
 import Options from "./Options";
 import Play from "./Play";
-import Copyright from "./Footer";
 import Score from "./Score";
 import Loading from "./Loading";
 import Again from "./Again";
-import Nav from "./Nav";
-import globalTheme from "./theme";
 
-const useStyles = makeStyles((theme) => ({
-  container: {
-    marginTop: theme.spacing(1),
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    minHeight: "100vh",
-  },
+const useStyles = makeStyles(() => ({
   game: {
-    marginTop: "135px",
     maxWidth: "295px",
-    flexGrow: 1,
-  },
-  footer: {
-    flexShrink: 0,
-    marginBottom: theme.spacing(4),
   },
 }));
 
@@ -153,17 +133,6 @@ export default function Game() {
   };
 
   return (
-    <MuiThemeProvider theme={globalTheme}>
-      <Container component="main" maxWidth="xs" className={classes.container}>
-        <CssBaseline />
-        <Nav className={classes.nav} />
-        <div className={classes.game}>
-          {renderCurrentState(getCurrentState())}
-        </div>
-        <Box className={classes.footer} mt={5}>
-          <Copyright />
-        </Box>
-      </Container>
-    </MuiThemeProvider>
+    <div className={classes.game}>{renderCurrentState(getCurrentState())}</div>
   );
 }

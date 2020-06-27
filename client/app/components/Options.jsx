@@ -219,6 +219,7 @@ export default function Options({
         </Grid>
       </Grid>
       <Button
+        size="large"
         type="submit"
         fullWidth
         variant="contained"

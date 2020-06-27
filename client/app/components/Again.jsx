@@ -24,6 +24,7 @@ export default function Again({ onClickHandler }) {
       <Grid container spacing={2}>
         <Grid item xs={12}>
           <Button
+            size="large"
             type="button"
             autoFocus
             fullWidth

@@ -4,10 +4,11 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 
 module.exports = {
-  entry: "./client/app/index.js",
+  entry: "./client/app/index.jsx",
   output: {
     path: path.resolve(__dirname, "dist"),
     filename: "index_bundle.js",
+    publicPath: "/",
   },
   module: {
     rules: [
@@ -30,6 +31,7 @@ module.exports = {
   devServer: {
     proxy: {
       "/api": "http://localhost:8000",
+      historyApiFallback: true,
     },
   },
   plugins: [

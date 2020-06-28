@@ -43,7 +43,7 @@ export default function Login() {
               netlifyIdentity.open();
             }}
           >
-            Log In
+            Get Started
           </Button>
         </Grid>
       </Grid>

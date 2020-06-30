@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -64,10 +65,11 @@ func NewTTS(ctx context.Context) (*TTS, error) {
 	return &TTS{client: client, ctx: ctx}, nil
 }
 
-func (t *TTS) Translate(text string, languageCode string) (io.Reader, error) {
+func (t *TTS) Translate(ssml string, languageCode string) (io.Reader, error) {
+	ssml = fmt.Sprintf("<speak><break time=\"500ms\"/>%s</speak>", ssml)
 	req := texttospeechpb.SynthesizeSpeechRequest{
 		Input: &texttospeechpb.SynthesisInput{
-			InputSource: &texttospeechpb.SynthesisInput_Text{Text: text},
+			InputSource: &texttospeechpb.SynthesisInput_Ssml{Ssml: ssml},
 		},
 		Voice: &texttospeechpb.VoiceSelectionParams{
 			LanguageCode: languageCode,

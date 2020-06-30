@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
 import Grid from "@material-ui/core/Grid";
@@ -31,6 +31,13 @@ export default function Play({
   const classes = useStyles();
   const [answer, setAnswer] = useState("");
   const [wrong, setWrong] = useState(false);
+  const answerInput = useRef("");
+
+  const handleFocus = () => {
+    if (answerInput.current) {
+      answerInput.current.focus();
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -59,6 +66,7 @@ export default function Play({
             required
             fullWidth
             autoFocus
+            inputRef={answerInput}
             value={answer}
             name="answer"
             label="Answer"
@@ -102,6 +110,7 @@ export default function Play({
         <Grid item xs={12} align="center">
           <ReactAudioPlayer
             src={audioUrl}
+            onPlay={handleFocus}
             className={classes.audio}
             autoPlay
             controls={allowAudioReplay}

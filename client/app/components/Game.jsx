@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 
 import getNumber from "../../fetch/api";
@@ -15,13 +15,77 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
+const registerGameReducer = (state, action) => {
+  switch (action.type) {
+    case "newGame":
+      return {
+        ...state,
+        cards: null,
+        n: 0,
+        score: 0,
+      };
+    case "correctAnswer":
+      return {
+        ...state,
+        score: state.score + 1,
+      };
+    case "nextCard":
+      return {
+        ...state,
+        n: state.n + 1,
+      };
+    case "fetching":
+      return {
+        ...state,
+        loading: true,
+      };
+    case "success":
+      return {
+        ...state,
+        cards: action.cards,
+        loading: false,
+      };
+    case "error":
+      return {
+        ...state,
+        loading: false,
+        error: action.error,
+      };
+    default:
+      throw new Error(`${action} action type not supported`);
+  }
+};
+
+const registerOptionsReducer = (state, action) => {
+  if (action.type === "updateOptions") {
+    return {
+      ...state,
+      language: action.language,
+      lowerBound: action.lowerBound,
+      upperBound: action.upperBound,
+      rounds: action.rounds,
+      allowReplay: action.allowReplay,
+    };
+  }
+  throw new Error("action type not supported");
+};
+
+const initialGameState = {
+  cards: null,
+  n: 0,
+  score: 0,
+};
+
 export default function Game() {
   const classes = useStyles();
-  const [score, setScore] = useState(0);
-  const [cards, setCards] = useState(null);
-  const [n, setN] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [options, setOptions] = useState({});
+  const [gameState, gameDispatch] = React.useReducer(
+    registerGameReducer,
+    initialGameState
+  );
+  const [optionsState, optionsDispatch] = React.useReducer(
+    registerOptionsReducer,
+    {}
+  );
 
   const randomInt = (min, max) => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -40,20 +104,19 @@ export default function Game() {
         window.scrollTo(0, 0);
       }
     },
-    [cards, n]
+    [gameState.cards, gameState.n]
   );
 
   const createCards = (lowerBound, upperBound, language, rounds) => {
     const numbers = [...Array(rounds)].map(() =>
       randomInt(lowerBound, upperBound)
     );
-    setLoading(true);
-    Promise.all(numbers.map((number) => getNumber(language.code, number))).then(
-      (r) => {
-        setCards(r);
-        setLoading(false);
-      }
-    );
+    gameDispatch({ type: "fetching" });
+    Promise.all(numbers.map((number) => getNumber(language.code, number)))
+      .then((r) => {
+        gameDispatch({ type: "success", cards: r });
+      })
+      .catch((error) => gameDispatch({ type: "error", error }));
   };
 
   const updateOptions = ({
@@ -63,42 +126,49 @@ export default function Game() {
     rounds,
     allowReplay,
   }) => {
-    setOptions({ language, lowerBound, upperBound, rounds, allowReplay });
+    optionsDispatch({
+      type: "updateOptions",
+      language,
+      lowerBound,
+      upperBound,
+      rounds,
+      allowReplay,
+    });
     createCards(lowerBound, upperBound, language, rounds);
   };
 
   const nextCard = (correct) => {
     if (correct) {
-      setScore(score + 1);
+      gameDispatch({ type: "correctAnswer" });
     }
-
-    setN(n + 1);
-  };
-
-  const newGame = () => {
-    setCards(null);
-    setN(0);
-    setScore(0);
+    gameDispatch({ type: "nextCard" });
   };
 
   const getCurrentState = () => {
-    if (cards && n >= cards.length) {
+    if (gameState.cards && gameState.n >= gameState.cards.length) {
       return "GAME_OVER";
     }
-    if (loading === true) {
+    if (gameState.loading === true) {
       return "LOADING";
     }
-    if (cards === null) {
+    if (gameState.cards === null) {
       return "NEW_GAME";
     }
     return "PLAYING";
   };
 
   const renderCurrentState = (status) => {
+    const { cards, n, score } = gameState;
+    const {
+      language,
+      lowerBound,
+      upperBound,
+      allowReplay,
+      rounds,
+    } = optionsState;
     const { number, url } =
       // eslint-disable-next-line security/detect-object-injection
       cards && cards[n] ? cards[n] : { number: "", url: "" };
-    const { language, lowerBound, upperBound, allowReplay, rounds } = options;
     // eslint-disable-next-line security/detect-object-injection
     return {
       NEW_GAME: (
@@ -126,7 +196,7 @@ export default function Game() {
       GAME_OVER: (
         <>
           <Score correct={score} attempted={n} remaining={rounds - n} />
-          <Again onClickHandler={newGame} />
+          <Again onClickHandler={() => gameDispatch({ type: "newGame" })} />
         </>
       ),
     }[status];

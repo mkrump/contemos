@@ -6,6 +6,8 @@ import { makeStyles } from "@material-ui/core/styles";
 import ReactAudioPlayer from "react-audio-player";
 import Alert from "@material-ui/lab/Alert";
 import PropTypes from "prop-types";
+import { useHotkeys } from "react-hotkeys-hook";
+import Typography from "@material-ui/core/Typography";
 
 import NumberFormatCustom from "./NumberFormat";
 
@@ -20,6 +22,9 @@ const useStyles = makeStyles((theme) => ({
     marginTop: theme.spacing(2),
     maxWidth: "275px",
   },
+  hotkeys: {
+    marginTop: theme.spacing(2),
+  },
 }));
 
 export default function Play({
@@ -31,6 +36,17 @@ export default function Play({
   const classes = useStyles();
   const [answer, setAnswer] = useState("");
   const [wrong, setWrong] = useState(false);
+  const rap = useRef(null);
+  // replay hotkey
+  useHotkeys(
+    "r",
+    () => {
+      if (!allowAudioReplay) return;
+      rap.current.audioEl.current.currentTime = 0;
+      rap.current.audioEl.current.play();
+    },
+    { filter: () => true }
+  );
   const answerInput = useRef("");
 
   const handleFocus = () => {
@@ -109,12 +125,28 @@ export default function Play({
         </Grid>
         <Grid item xs={12} align="center">
           <ReactAudioPlayer
+            ref={rap}
             src={audioUrl}
             onPlay={handleFocus}
             className={classes.audio}
             autoPlay
             controls={allowAudioReplay}
           />
+          {allowAudioReplay && (
+            <div className={classes.hotkeys}>
+              <Typography variant="body2" color="textSecondary" align="left">
+                Hotkeys:
+              </Typography>
+              <Typography
+                variant="body2"
+                color="textSecondary"
+                align="left"
+                style={{ paddingLeft: "1rem" }}
+              >
+                r = replay audio
+              </Typography>
+            </div>
+          )}
         </Grid>
       </Grid>
     </form>
